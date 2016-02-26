@@ -43,10 +43,12 @@ function ItemDAO(database) {
         *
         */
 
-        var categories = [];
+		
+		var categories = db.items.aggregate([$group : {_id: "$category", num : {$sum: 1}}, {$sort : {_id: 1}} ])
+        
         var category = {
             _id: "All",
-            num: 9999
+            num: db.item.count()
         };
 
         categories.push(category)
