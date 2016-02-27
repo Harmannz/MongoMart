@@ -44,18 +44,30 @@ function ItemDAO(database) {
         */
 
 		
-		var categories = db.items.aggregate([$group : {_id: "$category", num : {$sum: 1}}, {$sort : {_id: 1}} ])
-        
-        var category = {
-            _id: "All",
-            num: db.item.count()
-        };
+		var categories = []
+		//Get categories
+        this.db.collection('item').aggregate([ {$group : { _id : "$category", num : {$sum : 1} }}, {$sort : {_id : 1}} ]).toArray(function(err, docs){
+            assert.equal(err, null);
+            assert.notEqual(docs.length, 0);
+            
+            var total = 0;
+            
+            docs.forEach(function(doc){
+            	//sum total to add All category at the end
+            	total += doc.num;
+            	categories.push(doc)
+            });
 
-        categories.push(category)
-
-        // TODO-lab1A Replace all code above (in this method).
         
-        callback(categories);
+	        var all = {
+    	        _id: "All",
+        	    num: total
+	        };
+	        
+	        categories.push(all);
+    
+	        callback(categories);
+        })
     }
 
 
