@@ -87,15 +87,25 @@ function ItemDAO(database) {
          *
          */
 
-        var pageItem = this.createDummyItem();
-        var pageItems = [];
-        for (var i=0; i<5; i++) {
-            pageItems.push(pageItem);
-        }
+        var query;
+         var pageItems = [];
+         if (category == "All"){
+            query = {};
+         } else {
+            query = {"category": category };
+         }
 
-        // TODO-lab1B Replace all code above (in this method).
+        this.db.collection('item').find(query).skip(page * itemsPerPage).limit(itemsPerPage).toArray(function(err, docs){
+            //console.log("in toArray callback");
+            for (var i = 0; i < docs.length; i++) {
+                pageItems.push(docs[i]);
+            }
+            //console.log("Page items...");
+            //console.log(pageItems.length);
+            callback(pageItems);
+        });
 
-        callback(pageItems);
+        
     }
 
 
@@ -116,7 +126,17 @@ function ItemDAO(database) {
          *
          */
         
-        callback(numItems);
+		var query = {};
+		if (!category.match('All')){
+			query = {category: category};
+		}
+		
+        this.db.collection('item').find(query).count(function(err, count){
+            //console.log("this is the count");
+            //console.log(count);
+            callback(count);
+
+         });
     }
 
 
@@ -138,15 +158,14 @@ function ItemDAO(database) {
          *
          */
         
-        var item = this.createDummyItem();
-        var items = [];
-        for (var i=0; i<5; i++) {
-            items.push(item);
-        }
+        var pageItems = [];
 
-        // TODO-lab2A Replace all code above (in this method).
+   //      console.log(`${query} and ${page} and ${itemsPerPage} and ya`);
 
-        callback(items);
+         this.db.collection('item').find({ $text: { $search: query } } ).skip(page * itemsPerPage).limit(itemsPerPage).forEach(function(item){
+			pageItems.push(item);
+		 });
+		 callback(pageItems);
     }
 
 
@@ -164,7 +183,11 @@ function ItemDAO(database) {
         *
         */
 
-        callback(numItems);
+        this.db.collection('item').find({$text: {$search: query}}).count(function(err, count){
+			if(!err){
+				callback(count);
+			}
+		});
     }
 
 
@@ -179,11 +202,10 @@ function ItemDAO(database) {
          *
          */
         
-        var item = this.createDummyItem();
-
-        // TODO-lab3 Replace all code above (in this method).
-
-        callback(item);
+//        var item = this.createDummyItem();
+		this.db.collection('item').findOne({_id: itemId}, function(err, item){
+			if (!err){callback(item);}
+		});
     }
 
 
@@ -218,9 +240,13 @@ function ItemDAO(database) {
             date: Date.now()
         }
 
-        var dummyItem = this.createDummyItem();
-        dummyItem.reviews = [reviewDoc];
-        callback(dummyItem);
+        //var dummyItem = this.createDummyItem();
+        //dummyItem.reviews = [reviewDoc];
+        
+		this.db.collection('item').update({_id: itemId}, {$push: {reviews:reviewDoc}}, {}, function(err, results){
+			assert.equal(null, err);
+			callback(results);
+		});
     }
 
 
