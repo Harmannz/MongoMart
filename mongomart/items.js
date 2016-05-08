@@ -23,27 +23,23 @@ function ItemDAO(database) {
     "use strict";
 
     this.db = database;
-
+	/*
+	* TODO-lab1A
+	*
+	* LAB #1A: 
+	* Create an aggregation query to return the total number of items in each category. The
+	* documents in the array output by your aggregation should contain fields for 
+	* "_id" and "num". HINT: Test your mongodb query in the shell first before implementing 
+	* it in JavaScript.
+	*
+	* Ensure categories are organized in alphabetical order before passing to the callback.
+	*
+	* 
+	* @author: Harman Singh
+	*/
     this.getCategories = function(callback) {
         "use strict";
         
-        /*
-        * TODO-lab1A
-        *
-        * LAB #1A: 
-        * Create an aggregation query to return the total number of items in each category. The
-        * documents in the array output by your aggregation should contain fields for 
-        * "_id" and "num". HINT: Test your mongodb query in the shell first before implementing 
-        * it in JavaScript.
-        *
-        * Ensure categories are organized in alphabetical order before passing to the callback.
-        *
-        * Include a document for category "All" in the categories to pass to the callback. All
-        * should identify the total number of documents across all categories.
-        *
-        */
-
-		
 		var categories = []
 		//Get categories
         this.db.collection('item').aggregate([ {$group : { _id : "$category", num : {$sum : 1} }}, {$sort : {_id : 1}} ]).toArray(function(err, docs){
@@ -70,23 +66,19 @@ function ItemDAO(database) {
         })
     }
 
-
+	/*
+	 * LAB #1B: 
+	 * Create a query to select only the items that should be displayed for a particular
+	 * page. For example, on the first page, only the first itemsPerPage should be displayed. 
+	 * Use limit() and skip() and the method parameters: page and itemsPerPage to identify 
+	 * the appropriate products. Pass these items to the callback function. 
+	 *
+	 * Do NOT sort items. 
+	 *@author: Harman Singh
+	 */
     this.getItems = function(category, page, itemsPerPage, callback) {
         "use strict";
         
-        /*
-         * TODO-lab1B
-         *
-         * LAB #1B: 
-         * Create a query to select only the items that should be displayed for a particular
-         * page. For example, on the first page, only the first itemsPerPage should be displayed. 
-         * Use limit() and skip() and the method parameters: page and itemsPerPage to identify 
-         * the appropriate products. Pass these items to the callback function. 
-         *
-         * Do NOT sort items. 
-         *
-         */
-
         var query;
          var pageItems = [];
          if (category == "All"){
@@ -96,44 +88,39 @@ function ItemDAO(database) {
          }
 
         this.db.collection('item').find(query).skip(page * itemsPerPage).limit(itemsPerPage).toArray(function(err, docs){
-            //console.log("in toArray callback");
             for (var i = 0; i < docs.length; i++) {
                 pageItems.push(docs[i]);
             }
-            //console.log("Page items...");
-            //console.log(pageItems.length);
             callback(pageItems);
         });
 
         
     }
 
-
+	/*
+	 * TODO-lab1C
+	 *
+	 * LAB #1C: Write a query that determines the number of items in a category and pass the
+	 * count to the callback function. The count is used in the mongomart application for
+	 * pagination. The category is passed as a parameter to this method.
+	 *
+	 * See the route handler for the root path (i.e. "/") for an example of a call to the
+	 * getNumItems() method.
+	 *
+	 * @author: Harman Singh
+	 */
     this.getNumItems = function(category, callback) {
         "use strict";
         
         var numItems = 0;
 
-        /*
-         * TODO-lab1C
-         *
-         * LAB #1C: Write a query that determines the number of items in a category and pass the
-         * count to the callback function. The count is used in the mongomart application for
-         * pagination. The category is passed as a parameter to this method.
-         *
-         * See the route handler for the root path (i.e. "/") for an example of a call to the
-         * getNumItems() method.
-         *
-         */
-        
 		var query = {};
 		if (!category.match('All')){
 			query = {category: category};
 		}
 		
         this.db.collection('item').find(query).count(function(err, count){
-            //console.log("this is the count");
-            //console.log(count);
+            
             callback(count);
 
          });
@@ -158,10 +145,7 @@ function ItemDAO(database) {
          *
          */
         
-        var pageItems = [];
-
-   //      console.log(`${query} and ${page} and ${itemsPerPage} and ya`);
-
+ 
          this.db.collection('item').find({ $text: { $search: query } } ).skip(page * itemsPerPage).limit(itemsPerPage).forEach(function(item){
 			pageItems.push(item);
 		 });
