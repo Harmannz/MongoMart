@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/Harmannz/MongoMart.svg?branch=master)](https://travis-ci.org/Harmannz/MongoMart)
 # MongoMart
 ### About
 MongoMart is the final lab project in M101JS mongodb for javascript course provided by MongoDB.   
